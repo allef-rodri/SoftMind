@@ -1,88 +1,112 @@
 package br.com.softmind.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-
-val sentimentos = listOf(
-    "Triste 😢",
-    "Alegre 😄",
-    "Cansado 😴",
-    "Ansioso 😰",
-    "Medo 😨",
-    "Raiva 😡"
-)
+import br.com.softmind.R
 
 @Composable
 fun CheckinScreen() {
-    var selected by remember { mutableStateOf("") }
-    var texto by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Green)
     ) {
-        Text(
-            text = "Como você está se sentindo hoje?",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly) {
+            Row {
+                Text(text = "Escolha o seu emoji de hoje!", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            }
+            Row {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.happyface),
+                            contentDescription = "Alegre",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.tired),
+                            contentDescription = "Cansado",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.sadface),
+                            contentDescription = "Triste",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
 
-        Column {
-            sentimentos.forEach { sentimento ->
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 40.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.scare),
+                            contentDescription = "Ansioso",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.scared),
+                            contentDescription = "Medo",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.angry),
+                            contentDescription = "Raiva",
+                            modifier = Modifier.size(68.dp),
+                            tint = Color.Unspecified
+                        )
+                    }
+                }
+            }
+            Row {
                 Button(
-                    onClick = { selected = sentimento },
+                    onClick = { /*TODO*/ },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(bottom = 50.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selected == sentimento) Color(0xFF5EAAA8) else Color.LightGray
+                        containerColor = Color(0xFF007AFF)
                     )
                 ) {
-                    Text(sentimento)
+                    Text(text = "Enviar")
                 }
             }
         }
-
-        OutlinedTextField(
-            value = texto,
-            onValueChange = { texto = it },
-            label = { Text("Deseja desabafar ou escrever algo?") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Button(
-            onClick = {
-                // salvar sentimento + texto
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5EAAA8))
-        ) {
-            Text("Registrar", color = Color.White)
-        }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CheckinScreenPreview() {
+    CheckinScreen()
 }

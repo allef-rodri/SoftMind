@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SoftMindTheme {
-                Surface {
+                Surface(modifier = Modifier.fillMaxSize()) {
                     CheckinScreen(
                     )
                 }
