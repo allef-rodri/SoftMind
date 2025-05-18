@@ -1,5 +1,6 @@
 package br.com.softmind.screens
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -20,13 +21,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.softmind.model.Mocky
+import br.com.softmind.service.RetrofitFactory
 import kotlinx.coroutines.delay
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun AlertsScreen() {
     var isLoaded by remember { mutableStateOf(false) }
+
+    var dataMocky by remember { mutableStateOf(null)}
 
     val accentBlue = Color(0xFF42A5F5)
     val backgroundGradient = Brush.verticalGradient(
@@ -174,7 +182,24 @@ fun AlertsScreen() {
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Button(
-                                onClick = { alerts[index] = alerts[index].copy(read = true) },
+                                onClick = {
+                                    //alerts[index] = alerts[index].copy(read = true)
+                                    var call = RetrofitFactory().getDataMockyService().getDataMocky("d1db33ab-3522-4d71-afd4-09c4d271dae9")
+
+                                    call.enqueue(object : Callback<Mocky>{
+                                        override fun onResponse(
+                                            call: Call<Mocky>,
+                                            response: Response<Mocky>
+                                        ) {
+                                            Log.i("FIAP", "onResponse: ${response.body()}")
+                                        }
+
+                                        override fun onFailure(call: Call<Mocky>, t: Throwable) {
+                                            Log.i("FIAP", "onResponse: ${t.message}")
+                                        }
+
+                                    })
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFFFFA000)
                                 ),
