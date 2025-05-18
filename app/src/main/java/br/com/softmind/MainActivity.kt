@@ -19,8 +19,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SoftMindTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    CheckinScreen(
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    MyAppNavigation(
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }

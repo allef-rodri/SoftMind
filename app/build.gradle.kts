@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.compose)
     implementation("com.airbnb.android:lottie-compose:6.1.0")
     implementation ("androidx.compose.material3:material3:1.1.2")
     implementation ("androidx.compose.material:material-icons-core:1.5.4")
