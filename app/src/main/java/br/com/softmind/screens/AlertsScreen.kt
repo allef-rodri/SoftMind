@@ -1,11 +1,17 @@
 package br.com.softmind.screens
 
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
@@ -31,7 +37,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AlertsScreen() {
+fun AlertsScreen(onBackClick: () -> Unit = {}) {
     var isLoaded by remember { mutableStateOf(false) }
 
     var dataMocky by remember { mutableStateOf(null)}
@@ -88,7 +94,9 @@ fun AlertsScreen() {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Notifications,
@@ -103,6 +111,22 @@ fun AlertsScreen() {
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                        onClick = onBackClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = accentBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -183,7 +207,6 @@ fun AlertsScreen() {
                             Spacer(modifier = Modifier.height(12.dp))
                             Button(
                                 onClick = {
-                                    //alerts[index] = alerts[index].copy(read = true)
                                     var call = RetrofitFactory().getDataMockyService().getDataMocky("d1db33ab-3522-4d71-afd4-09c4d271dae9")
 
                                     call.enqueue(object : Callback<Mocky>{
@@ -191,10 +214,12 @@ fun AlertsScreen() {
                                             call: Call<Mocky>,
                                             response: Response<Mocky>
                                         ) {
+                                            alerts[index] = alerts[index].copy(read = response.body()?.success ?: false)
                                             Log.i("FIAP", "onResponse: ${response.body()}")
                                         }
 
                                         override fun onFailure(call: Call<Mocky>, t: Throwable) {
+                                            alerts[index] = alerts[index].copy(read = false)
                                             Log.i("FIAP", "onResponse: ${t.message}")
                                         }
 
@@ -217,6 +242,14 @@ fun AlertsScreen() {
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val buttonScale by animateFloatAsState(
+                    targetValue = if (isPressed) 0.96f else 1f,
+                    animationSpec = tween(durationMillis = 100)
+                )
             }
         }
     }

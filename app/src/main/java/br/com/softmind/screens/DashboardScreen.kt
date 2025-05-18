@@ -3,10 +3,13 @@ package br.com.softmind.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,13 +26,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
     selectedEmoji: String = "",
-    onBackToHome: () -> Unit = {}
+    onBackToHome: () -> Unit = {},
+    onShowAlerta: () -> Unit = {}
 ) {
     val validEmojis = listOf("feliz", "cansado", "triste", "ansioso", "medo", "raiva")
     val isValidEmoji = selectedEmoji in validEmojis
@@ -491,6 +496,67 @@ fun DashboardScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val buttonScale by animateFloatAsState(
+                    targetValue = if (isPressed) 0.96f else 1f,
+                    animationSpec = tween(durationMillis = 100)
+                )
+
+                val primaryPurple = Color(0xFF7B1FA2)
+                val buttonGradient = Brush.linearGradient(
+                    colors = listOf(
+                        primaryPurple,
+                        accentPink.copy(alpha = 0.8f),
+                        primaryPurple
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(300f, 300f)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth(0.8f)
+                        .height(56.dp)
+                        .scale(buttonScale)
+                        .graphicsLayer {
+                            shadowElevation = 16f
+                            shape = RoundedCornerShape(28.dp)
+                            clip = true
+                        }
+                        .background(buttonGradient, RoundedCornerShape(28.dp))
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            scope.launch {
+                                delay(100)
+                                onShowAlerta()
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Ver Alertas",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
         }
     }

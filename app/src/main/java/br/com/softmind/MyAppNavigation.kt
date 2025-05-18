@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import br.com.softmind.screens.AlertsScreen
 import br.com.softmind.screens.CheckinScreen
 import br.com.softmind.screens.DashboardScreen
 import br.com.softmind.screens.HomeScreen
@@ -26,6 +27,15 @@ fun MyAppNavigation(modifier: Modifier = Modifier) {
                 navController.navigate("dashboard/$emoji")
             })
         }
+
+        composable("alerta") {
+            AlertsScreen(
+                onBackClick = {
+                    navController.navigateUp()
+                }
+            )
+        }
+
         composable(
             route = "dashboard/{emoji}",
             arguments = listOf(navArgument("emoji") { type = NavType.StringType })
@@ -47,6 +57,9 @@ fun MyAppNavigation(modifier: Modifier = Modifier) {
                     navController.navigate("checkin") {
                         popUpTo("home")
                     }
+                },
+                onShowAlerta = {
+                    navController.navigate("alerta")
                 }
             )
         }
