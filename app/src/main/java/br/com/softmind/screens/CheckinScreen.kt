@@ -1,7 +1,12 @@
 package br.com.softmind.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -150,48 +156,86 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
                 }
             }
 
-            // Botão "Vamos nessa!"
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth(0.8f)
-                    .height(56.dp)
-                    .scale(buttonScale)
-                    .graphicsLayer {
-                        shadowElevation = 16f
-                        shape = RoundedCornerShape(28.dp)
-                        clip = true
-                    }
-                    .background(buttonGradient, RoundedCornerShape(28.dp))
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        enabled = selectedEmoji != null
-                    ) {
-                        scope.launch {
-                            delay(100)
-                            selectedEmoji?.let { onStartClick(it) }
-                        }
-                    },
-                contentAlignment = Alignment.Center
+            // Agrupa a mensagem de aviso e o botão em um Column para mantê-los juntos
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                // Área para mensagem de aviso - altura fixa para não reajustar o layout
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(20.dp),
+                    contentAlignment = Alignment.Center
                 ) {
+                    // Apenas a visibilidade do texto muda, não a estrutura
                     Text(
-                        text = "Vamos nessa!",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        text = "Por favor, selecione um emoji para continuar",
+                        color = Color(0xFFFFA000),
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium,
+                        // Controle apenas a opacidade do texto
+                        modifier = Modifier.alpha(if (selectedEmoji == null) 1f else 0f)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                }
+                
+                // Reduzido o espaçamento vertical para aproximar a mensagem do botão
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Botão "Vamos nessa!"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(56.dp)
+                        .scale(buttonScale)
+                        .graphicsLayer {
+                            shadowElevation = 16f
+                            shape = RoundedCornerShape(28.dp)
+                            clip = true
+                        }
+                        .background(
+                            brush = if (selectedEmoji != null) buttonGradient else Brush.linearGradient(
+                                colors = listOf(
+                                    Color.Gray.copy(alpha = 0.5f),
+                                    Color.Gray.copy(alpha = 0.3f),
+                                    Color.Gray.copy(alpha = 0.5f)
+                                ),
+                                start = Offset(0f, 0f),
+                                end = Offset(300f, 300f)
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            enabled = selectedEmoji != null
+                        ) {
+                            scope.launch {
+                                delay(100)
+                                selectedEmoji?.let { onStartClick(it) }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Vamos nessa!",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
