@@ -11,22 +11,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import br.com.softmind.model.Mocky
 import br.com.softmind.service.RetrofitFactory
 import kotlinx.coroutines.delay
@@ -37,10 +34,8 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AlertsScreen(onBackClick: () -> Unit = {}) {
+fun AlertsScreen(navController: NavHostController) {
     var isLoaded by remember { mutableStateOf(false) }
-
-    var dataMocky by remember { mutableStateOf(null)}
 
     val accentBlue = Color(0xFF42A5F5)
     val backgroundGradient = Brush.verticalGradient(
@@ -114,19 +109,14 @@ fun AlertsScreen(onBackClick: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Button(
-                        onClick = onBackClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent
-                        )
-                    ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = accentBlue,
-                            modifier = Modifier.size(28.dp)
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = accentBlue
                         )
                     }
+
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -253,10 +243,4 @@ fun AlertsScreen(onBackClick: () -> Unit = {}) {
             }
         }
     }
-}
-
-@Composable
-@Preview(showBackground = true)
-fun AlertsScreenPreview() {
-    AlertsScreen()
 }
