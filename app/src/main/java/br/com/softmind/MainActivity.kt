@@ -7,9 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import br.com.softmind.screens.CheckinScreen
+import androidx.navigation.compose.rememberNavController
 import br.com.softmind.ui.theme.SoftMindTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,8 +18,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SoftMindTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                val navController = rememberNavController()
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
                     MyAppNavigation(
+                        navController = navController,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
