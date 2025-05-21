@@ -23,8 +23,10 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.*
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.*
+import androidx.navigation.NavHostController
+import br.com.softmind.navigation.NavRoutes
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,7 +34,7 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun HomeScreen(onStartClick: () -> Unit = {}) {
+fun HomeScreen(navController: NavHostController) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animationhome.json")
     )
@@ -205,7 +207,6 @@ fun HomeScreen(onStartClick: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Título
                     Text(
                         text = "Bem-vindo ao SoftMind",
                         fontSize = 26.sp,
@@ -216,7 +217,6 @@ fun HomeScreen(onStartClick: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Frase motivacional em um card
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -281,7 +281,7 @@ fun HomeScreen(onStartClick: () -> Unit = {}) {
                             ) {
                                 scope.launch {
                                     delay(100)
-                                    onStartClick()
+                                    navController.navigate(NavRoutes.CHECKIN)
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -326,23 +326,25 @@ fun HomeScreen(onStartClick: () -> Unit = {}) {
                     .padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Ícones de funcionalidades
                 FeatureIcon(
                     icon = Icons.Rounded.Headphones,
                     label = "Escuta",
-                    color = accentPink
+                    color = accentPink,
+                    onClick = { navController.navigate(NavRoutes.SUPPORT) }
                 )
 
                 FeatureIcon(
                     icon = Icons.Rounded.Spa,
                     label = "Bem-estar",
-                    color = accentBlue
+                    color = accentBlue,
+                    onClick = { navController.navigate(NavRoutes.WELLNESS) }
                 )
 
                 FeatureIcon(
                     icon = Icons.Rounded.Notifications,
                     label = "Alertas",
-                    color = Color(0xFFFFA000)
+                    color = Color(0xFFFFA000),
+                    onClick = { navController.navigate(NavRoutes.ALERTS) }
                 )
             }
         }
@@ -353,10 +355,12 @@ fun HomeScreen(onStartClick: () -> Unit = {}) {
 fun FeatureIcon(
     icon: ImageVector,
     label: String,
-    color: Color
+    color: Color,
+    onClick: () -> Unit
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
     ) {
         Box(
             modifier = Modifier
@@ -394,10 +398,4 @@ fun FeatureIcon(
             fontWeight = FontWeight.Medium
         )
     }
-}
-
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen()
 }
