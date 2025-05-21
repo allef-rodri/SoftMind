@@ -1,12 +1,8 @@
 package br.com.softmind.screens
 
-import androidx.compose.animation.AnimatedVisibility
+import br.com.softmind.navigation.NavRoutes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,15 +27,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import br.com.softmind.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
+fun CheckinScreen(navController: NavHostController) {
 
     var isLoaded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -103,7 +99,6 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
             )
 
             Column {
-                // Primeira linha de emojis
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -128,7 +123,6 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
                     )
                 }
 
-                // Segunda linha de emojis
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -156,19 +150,16 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
                 }
             }
 
-            // Agrupa a mensagem de aviso e o botão em um Column para mantê-los juntos
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Área para mensagem de aviso - altura fixa para não reajustar o layout
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Apenas a visibilidade do texto muda, não a estrutura
                     Text(
                         text = "Por favor, selecione um emoji para continuar",
                         color = Color(0xFFFFA000),
@@ -179,11 +170,9 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
                         modifier = Modifier.alpha(if (selectedEmoji == null) 1f else 0f)
                     )
                 }
-                
-                // Reduzido o espaçamento vertical para aproximar a mensagem do botão
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
-                // Botão "Vamos nessa!"
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -213,7 +202,9 @@ fun CheckinScreen(onStartClick: (String) -> Unit = {}) {
                         ) {
                             scope.launch {
                                 delay(100)
-                                selectedEmoji?.let { onStartClick(it) }
+                                if (selectedEmoji != null) {
+                                    navController.navigate("${NavRoutes.DASHBOARD}/$selectedEmoji")
+                                }
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -269,8 +260,3 @@ fun EmojiButton(
     )
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CheckinScreenPreview() {
-    CheckinScreen()
-}
