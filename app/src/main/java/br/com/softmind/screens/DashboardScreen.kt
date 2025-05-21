@@ -25,22 +25,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
+import br.com.softmind.navigation.NavRoutes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import androidx.navigation.NavHostController
+
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
-    selectedEmoji: String = "",
-    onBackToHome: () -> Unit = {},
-    onShowAlerta: () -> Unit = {}
-) {
+    navController: NavHostController, selectedEmoji: String) {
     val validEmojis = listOf("feliz", "cansado", "triste", "ansioso", "medo", "raiva")
     val isValidEmoji = selectedEmoji in validEmojis
 
     if (!isValidEmoji) {
-        // Tela de erro/aviso quando o emoji não foi selecionado corretamente
+        // Tela de erro se não tiver emoji selecionado
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -90,7 +90,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = onBackToHome,
+                    onClick = { navController.navigate(NavRoutes.HOME) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFEC407A)
                     ),
@@ -106,7 +106,6 @@ fun DashboardScreen(
             }
         }
     } else {
-        // O código original da DashboardScreen vai aqui
         DisposableEffect(Unit) {
             onDispose { }
         }
@@ -533,7 +532,7 @@ fun DashboardScreen(
                         ) {
                             scope.launch {
                                 delay(100)
-                                onShowAlerta()
+                                navController.navigate(NavRoutes.ALERTS)
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -640,8 +639,3 @@ fun StatCard(
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun DashboardScreenPreview() {
-    DashboardScreen()
-}
