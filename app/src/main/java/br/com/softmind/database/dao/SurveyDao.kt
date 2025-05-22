@@ -35,6 +35,9 @@ interface SurveyDao {
     @Query("SELECT * FROM categories WHERE categoryId = :categoryId")
     suspend fun getCategoryById(categoryId: UUID): Category?
 
+    @Query("SELECT * FROM categories WHERE name = :name AND displayOrder = :displayOrder LIMIT 1")
+    suspend fun getCategoryByNameAndOrder(name: String, displayOrder: Int): Category?
+
     // Question operations
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuestion(question: Question): Long

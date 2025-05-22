@@ -2,12 +2,16 @@ package br.com.softmind
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.screens.*
+import br.com.softmind.ui.viewmodel.CheckinViewModel
+import br.com.softmind.ui.viewmodel.CheckinViewModelFactory
 
 @Composable
 fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
@@ -19,7 +23,15 @@ fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
             HomeScreen(navController)
         }
         composable(NavRoutes.CHECKIN) {
-            CheckinScreen(navController)
+            // Obter a MainActivity do contexto local
+            val mainActivity = LocalContext.current as MainActivity
+
+            // Criar o ViewModel usando a Factory
+            val viewModel: CheckinViewModel = viewModel(
+                factory = CheckinViewModelFactory(mainActivity.surveyDatabaseFacade)
+            )
+
+            CheckinScreen(navController = navController, viewModel = viewModel)
         }
         composable(
             route = "${NavRoutes.DASHBOARD}/{emoji}",

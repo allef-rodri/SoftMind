@@ -29,7 +29,7 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
                 val categoryId = UUID.randomUUID()
                 val category = Category(
                     categoryId = categoryId,
-                    name = "Questionário de checkin",
+                    name = "checkin",
                     description = "Perguntas utilizadas para a fase de checkin do app SoftMind",
                     iconUrl = null,
                     colorHex = null,
@@ -170,6 +170,16 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
     suspend fun getQuestionsWithOptionsForCategory(categoryId: UUID) =
         surveyDao.getQuestionsWithOptionsAndAnswersByCategory(categoryId)
 
+    fun getAllCategories(): Flow<List<Category>> {
+        return surveyDao.getAllCategories()
+    }
+
+    suspend fun getCategoryByNameAndOrder(name: String, displayOrder: Int): Category? {
+        return withContext(Dispatchers.IO) {
+            surveyDao.getCategoryByNameAndOrder(name, displayOrder)
+        }
+    }
+
     /**
      * Sincroniza perguntas e opções do banco externo para o local
      */
@@ -223,7 +233,7 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
             }
         }
     }
-    
+
     private fun getCurrentSessionDate(): String {
         return dateFormatter.format(Date())
     }

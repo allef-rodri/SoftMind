@@ -30,15 +30,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import br.com.softmind.R
+import br.com.softmind.ui.viewmodel.CheckinViewModel
+import br.com.softmind.database.entity.Option
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun CheckinScreen(navController: NavHostController) {
-
+fun CheckinScreen(
+    navController: NavHostController,
+    viewModel: CheckinViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     var isLoaded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    // Observando os estados do ViewModel
+    val currentQuestion by viewModel.currentQuestion.collectAsState()
+    val emojiOptions by viewModel.emojiOptions.collectAsState()
+    val selectedOption by viewModel.selectedOption.collectAsState()
 
     val primaryPurple = Color(0xFF7B1FA2)
     val deepPurple = Color(0xFF4A148C)
@@ -75,8 +83,6 @@ fun CheckinScreen(navController: NavHostController) {
         animationSpec = tween(durationMillis = 100)
     )
 
-    var selectedEmoji by remember { mutableStateOf<String?>(null) }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -89,8 +95,9 @@ fun CheckinScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
+            // Usar o título da pergunta atual do ViewModel
             Text(
-                text = "Escolha o seu emoji de hoje!",
+                text = currentQuestion?.title ?: "Escolha o seu emoji de hoje!",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontSize = 26.sp,
@@ -98,56 +105,28 @@ fun CheckinScreen(navController: NavHostController) {
                 color = Color.White
             )
 
-            Column {
-                Row(
+            // Adicionar descrição se existir
+            currentQuestion?.description?.let { description ->
+                Text(
+                    text = description,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    EmojiButton(
-                        name = "feliz",
-                        resId = R.drawable.happyface,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                    EmojiButton(
-                        name = "cansado",
-                        resId = R.drawable.tired,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                    EmojiButton(
-                        name = "triste",
-                        resId = R.drawable.sadface,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                }
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 40.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    EmojiButton(
-                        name = "ansioso",
-                        resId = R.drawable.scare,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                    EmojiButton(
-                        name = "medo",
-                        resId = R.drawable.scared,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                    EmojiButton(
-                        name = "raiva",
-                        resId = R.drawable.angry,
-                        selectedEmoji = selectedEmoji,
-                        onSelect = { selectedEmoji = it }
-                    )
-                }
+            // Exibir os emojis organizados em grid de 3x2
+            if (emojiOptions.isNotEmpty()) {
+                EmojiOptionsGrid(
+                    options = emojiOptions,
+                    selectedOption = selectedOption,
+                    onOptionSelected = { option ->
+                        viewModel.selectOption(option)
+                    }
+                )
             }
 
             Column(
@@ -166,8 +145,7 @@ fun CheckinScreen(navController: NavHostController) {
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,
-                        // Controle apenas a opacidade do texto
-                        modifier = Modifier.alpha(if (selectedEmoji == null) 1f else 0f)
+                        modifier = Modifier.alpha(if (selectedOption == null) 1f else 0f)
                     )
                 }
 
@@ -184,7 +162,7 @@ fun CheckinScreen(navController: NavHostController) {
                             clip = true
                         }
                         .background(
-                            brush = if (selectedEmoji != null) buttonGradient else Brush.linearGradient(
+                            brush = if (selectedOption != null) buttonGradient else Brush.linearGradient(
                                 colors = listOf(
                                     Color.Gray.copy(alpha = 0.5f),
                                     Color.Gray.copy(alpha = 0.3f),
@@ -198,12 +176,15 @@ fun CheckinScreen(navController: NavHostController) {
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null,
-                            enabled = selectedEmoji != null
+                            enabled = selectedOption != null
                         ) {
                             scope.launch {
                                 delay(100)
-                                if (selectedEmoji != null) {
-                                    navController.navigate("${NavRoutes.DASHBOARD}/$selectedEmoji")
+                                if (selectedOption != null) {
+                                    // Salvar a resposta antes de navegar
+                                    viewModel.saveAnswer {
+                                        navController.navigate("${NavRoutes.DASHBOARD}/${selectedOption?.text ?: ""}")
+                                    }
                                 }
                             }
                         },
@@ -234,29 +215,71 @@ fun CheckinScreen(navController: NavHostController) {
 }
 
 @Composable
-fun EmojiButton(
-    name: String,
-    resId: Int,
-    selectedEmoji: String?,
-    onSelect: (String) -> Unit
+fun EmojiOptionsGrid(
+    options: List<Option>,
+    selectedOption: Option?,
+    onOptionSelected: (Option) -> Unit
 ) {
-    val isSelected = selectedEmoji == name
+    Column {
+        // Divide as opções em linhas de 3
+        val rows = options.chunked(3)
+
+        rows.forEachIndexed { rowIndex, rowOptions ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = if (rowIndex > 0) 40.dp else 0.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                rowOptions.forEach { option ->
+                    EmojiButton(
+                        option = option,
+                        isSelected = selectedOption?.optionId == option.optionId,
+                        onSelect = { onOptionSelected(option) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EmojiButton(
+    option: Option,
+    isSelected: Boolean,
+    onSelect: () -> Unit
+) {
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.5f else 1f,
         label = "emojiScale"
     )
 
+    // Mapear o valor da opção para o recurso de desenho correspondente
+    val resId = getEmojiResourceId(option.value!!)
+
     Icon(
         painter = painterResource(id = resId),
-        contentDescription = name,
+        contentDescription = option.text,
         modifier = Modifier
             .graphicsLayer(scaleX = scale, scaleY = scale)
             .size(68.dp)
             .clip(CircleShape)
             .background(if (isSelected) Color(0xFFE1BEE7) else Color.Transparent)
-            .clickable { onSelect(name) }
+            .clickable { onSelect() }
             .padding(4.dp),
         tint = Color.Unspecified
     )
 }
 
+// Função auxiliar para mapear o valor da opção para o ID de recurso correspondente
+fun getEmojiResourceId(value: String): Int {
+    return when (value) {
+        "happyface" -> br.com.softmind.R.drawable.happyface
+        "tired" -> br.com.softmind.R.drawable.tired
+        "sadface" -> br.com.softmind.R.drawable.sadface
+        "scare" -> br.com.softmind.R.drawable.scare
+        "scared" -> br.com.softmind.R.drawable.scared
+        "angry" -> br.com.softmind.R.drawable.angry
+        else -> br.com.softmind.R.drawable.happyface // Fallback padrão
+    }
+}
