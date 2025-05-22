@@ -19,6 +19,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    packaging {
+        resources {
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -42,6 +48,7 @@ android {
 
 dependencies {
 
+    implementation(libs.identity.jvm)
     val room_version = "2.7.1"
 
     implementation("androidx.room:room-runtime:$room_version")
