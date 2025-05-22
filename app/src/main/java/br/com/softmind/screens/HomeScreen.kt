@@ -1,5 +1,6 @@
 package br.com.softmind.screens
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -23,44 +24,48 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import br.com.softmind.MainActivity
 import br.com.softmind.navigation.NavRoutes
+import br.com.softmind.ui.viewmodel.HomeViewModel
+import br.com.softmind.ui.viewmodel.HomeViewModelFactory
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animationhome.json")
+fun HomeScreen(
+    navController: NavHostController,
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            (LocalActivity.current as MainActivity).surveyDatabaseFacade
+        )
     )
-
-    val lottieLoaded = composition != null
-
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        isPlaying = lottieLoaded,
-        restartOnPlay = false
-    )
-
-    var isLoaded by remember { mutableStateOf(false) }
+) {
+    // Observar os estados do ViewModel
+    val hasCompletedTodayCheckin by viewModel.hasCompletedTodayCheckin.collectAsState()
+    val todaySelectedEmoji by viewModel.todaySelectedEmoji.collectAsState()
+    
     val scope = rememberCoroutineScope()
-
-    val cardScale by animateFloatAsState(
-        targetValue = if (isLoaded) 1f else 0.92f,
-        animationSpec = tween(durationMillis = 1000)
-    )
-
+    
+    var isLoaded by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        delay(300)
+        isLoaded = true
+        viewModel.checkTodayCheckin()
+    }
+    
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    
     val primaryPurple = Color(0xFF7B1FA2)
     val deepPurple = Color(0xFF4A148C)
     val accentPink = Color(0xFFEC407A)
-    val accentBlue = Color(0xFF42A5F5)
-
+    
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             deepPurple,
@@ -69,14 +74,7 @@ fun HomeScreen(navController: NavHostController) {
             Color(0xFF9C27B0)
         )
     )
-
-    val cardGradient = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFF7E57C2).copy(alpha = 0.3f),
-            Color(0xFFD1C4E9).copy(alpha = 0.1f)
-        )
-    )
-
+    
     val buttonGradient = Brush.linearGradient(
         colors = listOf(
             primaryPurple,
@@ -86,195 +84,183 @@ fun HomeScreen(navController: NavHostController) {
         start = Offset(0f, 0f),
         end = Offset(300f, 300f)
     )
-
-    val frases = listOf(
-        "Você é mais forte do que imagina.",
-        "Respire. Sinta. Recomece.",
-        "Um passo de cada vez, sempre em frente.",
-        "Cuidar de si é um ato de coragem.",
-        "Tudo bem não estar bem. Você não está sozinho.",
-        "Hoje é um bom dia para se acolher.",
-        "A sua saúde mental importa — e muito!"
+    
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.Asset("mental_health.json")
     )
-
-    val fraseAleatoria = remember {
-        frases[Random.nextInt(frases.size)]
-    }
-
-    LaunchedEffect(Unit) {
-        delay(300)
-        isLoaded = true
-    }
-
+    
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+    )
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundGradient),
-        contentAlignment = Alignment.Center
+            .background(backgroundGradient)
     ) {
-        AnimatedVisibility(
-            visible = isLoaded,
-            enter = fadeIn(animationSpec = tween(1000)) +
-                    slideInVertically(
-                        initialOffsetY = { -50 },
-                        animationSpec = tween(800)
-                    ),
+        Column(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 48.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Header
+            AnimatedVisibility(
+                visible = isLoaded,
+                enter = fadeIn() + slideInVertically { -40 },
+                exit = fadeOut()
             ) {
                 Text(
                     text = "SoftMind",
                     style = TextStyle(
-                        brush = Brush.horizontalGradient(
+                        brush = Brush.linearGradient(
                             colors = listOf(
-                                Color.White,
-                                accentPink.copy(alpha = 0.9f)
+                                Color(0xFF7B1FA2),
+                                Color(0xFFEC407A)
                             )
-                        ),
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 36.sp
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Seu espaço de bem-estar",
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                        )
+                    ),
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
                 )
             }
-        }
-
-        // Card principal
-        Card(
-            modifier = Modifier
-                .padding(5.dp)
-                .fillMaxWidth(0.9f)
-                .wrapContentHeight()
-                .scale(cardScale),
-            shape = RoundedCornerShape(17.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.15f)
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 8.dp
-            )
-        ) {
-            Box(
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Lottie Animation
+            LottieAnimation(
+                composition = composition,
+                progress = progress,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(brush = cardGradient)
+                    .size(200.dp)
+                    .padding(8.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Check-in Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.15f)
+                )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(220.dp)
-                            .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        accentPink.copy(alpha = 0.2f),
-                                        Color.Transparent
-                                    )
-                                ),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (lottieLoaded) {
-                            LottieAnimation(
-                                composition = composition,
-                                progress = progress,
-                                modifier = Modifier.size(200.dp)
-                            )
-                        } else {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(80.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
                     Text(
-                        text = "Bem-vindo ao SoftMind",
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
+                        text = if (hasCompletedTodayCheckin) 
+                               "Você já realizou seu check-in hoje!" 
+                               else "Como você está se sentindo hoje?",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        color = Color.White
                     )
-
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = if (hasCompletedTodayCheckin) 
+                               "Seu estado emocional foi registrado com sucesso." 
+                               else "Faça seu check-in diário para registrar seu estado emocional.",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                    
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White.copy(alpha = 0.1f)
-                        )
-                    ) {
+                    
+                    // Botões de checkin
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed by interactionSource.collectIsPressedAsState()
+                    val buttonScale by animateFloatAsState(
+                        targetValue = if (isPressed) 0.95f else 1f,
+                        animationSpec = tween(durationMillis = 100)
+                    )
+                    
+                    // Se o usuário já completou o checkin, mostrar o botão para ir direto para o Dashboard
+                    if (hasCompletedTodayCheckin && todaySelectedEmoji != null) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .height(50.dp)
+                                .scale(buttonScale)
+                                .graphicsLayer {
+                                    shadowElevation = 8f
+                                    shape = RoundedCornerShape(25.dp)
+                                    clip = true
+                                }
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFF4CAF50),
+                                            Color(0xFF8BC34A)
+                                        ),
+                                        start = Offset(0f, 0f),
+                                        end = Offset(300f, 300f)
+                                    ),
+                                    shape = RoundedCornerShape(25.dp)
+                                )
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    scope.launch {
+                                        delay(100)
+                                        // Aqui usamos explicitamente o valor do todaySelectedEmoji
+                                        val emoji = todaySelectedEmoji ?: ""
+                                        navController.navigate("${NavRoutes.DASHBOARD}/$emoji")
+                                    }
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.FormatQuote,
-                                    contentDescription = null,
-                                    tint = accentPink.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(24.dp)
+                                Text(
+                                    text = "Ver meu dashboard",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = fraseAleatoria,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White.copy(alpha = 0.9f),
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = 24.sp
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    val interactionSource = remember { MutableInteractionSource() }
-                    val isPressed by interactionSource.collectIsPressedAsState()
-                    val buttonScale by animateFloatAsState(
-                        targetValue = if (isPressed) 0.96f else 1f,
-                        animationSpec = tween(durationMillis = 100)
-                    )
-
+                    
+                    // Botão para fazer/refazer o checkin
                     Box(
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .fillMaxWidth(0.8f)
-                            .height(56.dp)
+                            .fillMaxWidth()
+                            .height(50.dp)
                             .scale(buttonScale)
                             .graphicsLayer {
-                                shadowElevation = 16f
-                                shape = RoundedCornerShape(28.dp)
+                                shadowElevation = 8f
+                                shape = RoundedCornerShape(25.dp)
                                 clip = true
                             }
-                            .background(buttonGradient, RoundedCornerShape(28.dp))
+                            .background(
+                                brush = buttonGradient,
+                                shape = RoundedCornerShape(25.dp)
+                            )
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null
@@ -287,65 +273,62 @@ fun HomeScreen(navController: NavHostController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Começar",
-                                fontSize = 18.sp,
+                                text = if (hasCompletedTodayCheckin) "Refazer checkin" else "Fazer checkin diário",
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
                 }
             }
-        }
-
-        AnimatedVisibility(
-            visible = isLoaded,
-            enter = fadeIn(animationSpec = tween(1500)) +
-                    slideInVertically(
-                        initialOffsetY = { 50 },
-                        animationSpec = tween(1000)
-                    ),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            
+            // Espaçador que empurra os ícones para o rodapé
+            Spacer(modifier = Modifier.weight(1f))
+            
+            // Features grid no rodapé
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                FeatureIcon(
-                    icon = Icons.Rounded.Headphones,
-                    label = "Escuta",
-                    color = accentPink,
-                    onClick = { navController.navigate(NavRoutes.SUPPORT) }
+                Text(
+                    text = "Recursos disponíveis",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-
-                FeatureIcon(
-                    icon = Icons.Rounded.Spa,
-                    label = "Bem-estar",
-                    color = accentBlue,
-                    onClick = { navController.navigate(NavRoutes.WELLNESS) }
-                )
-
-                FeatureIcon(
-                    icon = Icons.Rounded.Notifications,
-                    label = "Alertas",
-                    color = Color(0xFFFFA000),
-                    onClick = { navController.navigate(NavRoutes.ALERTS) }
-                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    FeatureIcon(
+                        icon = Icons.Rounded.Notifications,
+                        label = "Alertas",
+                        color = Color(0xFF00BCD4),
+                        onClick = { navController.navigate(NavRoutes.ALERTS) }
+                    )
+                    
+                    FeatureIcon(
+                        icon = Icons.Rounded.Mail,
+                        label = "Suporte",
+                        color = Color(0xFF8BC34A),
+                        onClick = { navController.navigate(NavRoutes.SUPPORT) }
+                    )
+                    
+                    FeatureIcon(
+                        icon = Icons.Rounded.Favorite,
+                        label = "Bem-estar",
+                        color = Color(0xFFFF5722),
+                        onClick = { navController.navigate(NavRoutes.WELLNESS) }
+                    )
+                }
+                
+                // Espaço no final para evitar que os ícones fiquem muito no limite da tela
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -360,42 +343,31 @@ fun FeatureIcon(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable(onClick = onClick)
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .background(
-                    color = color.copy(alpha = 0.2f),
-                    shape = CircleShape
-                )
-                .border(
-                    width = 1.dp,
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.2f)
-                        )
-                    ),
-                    shape = CircleShape
-                ),
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
+                tint = color,
+                modifier = Modifier.size(32.dp)
             )
         }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = Color.White.copy(alpha = 0.8f),
-            fontWeight = FontWeight.Medium
+            fontSize = 14.sp,
+            color = Color.White
         )
     }
 }

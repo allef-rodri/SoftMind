@@ -1,8 +1,8 @@
 package br.com.softmind
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,6 +12,8 @@ import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.screens.*
 import br.com.softmind.ui.viewmodel.CheckinViewModel
 import br.com.softmind.ui.viewmodel.CheckinViewModelFactory
+import br.com.softmind.ui.viewmodel.HomeViewModel
+import br.com.softmind.ui.viewmodel.HomeViewModelFactory
 
 @Composable
 fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
@@ -20,11 +22,20 @@ fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
         startDestination = NavRoutes.HOME
     ) {
         composable(NavRoutes.HOME) {
-            HomeScreen(navController)
+            // Obter a MainActivity usando LocalActivity
+            val mainActivity = LocalActivity.current as MainActivity
+
+            // Criar o HomeViewModel usando a HomeViewModelFactory
+            val viewModel: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(mainActivity.surveyDatabaseFacade)
+            )
+
+            HomeScreen(navController = navController, viewModel = viewModel)
         }
+
         composable(NavRoutes.CHECKIN) {
-            // Obter a MainActivity do contexto local
-            val mainActivity = LocalContext.current as MainActivity
+            // Obter a MainActivity usando LocalActivity
+            val mainActivity = LocalActivity.current as MainActivity
 
             // Criar o ViewModel usando a Factory
             val viewModel: CheckinViewModel = viewModel(

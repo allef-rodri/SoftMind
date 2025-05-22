@@ -180,6 +180,64 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
         }
     }
 
+    suspend fun hasCompletedTodayCheckin(): Boolean {
+        return withContext(Dispatchers.IO) {
+            // Obter a categoria checkin
+            val checkinCategory = getCategoryByNameAndOrder(name = "checkin", displayOrder = 1)
+
+            if (checkinCategory != null) {
+                // Obter as perguntas da categoria
+                val questions = surveyDao.getQuestionsByCategory(checkinCategory.categoryId).first()
+
+                if (questions.isNotEmpty()) {
+                    // Verificar se há respostas para essas perguntas hoje
+                    val today = dateFormatter.format(Date())
+                    val firstQuestion = questions.first()
+                    val answer = surveyDao.getAnswerForQuestion(firstQuestion.questionId, today)
+
+                    // Se encontrou uma resposta, o usuário já completou o checkin hoje
+                    answer != null
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        }
+    }
+
+    suspend fun getTodaySelectedEmoji(): String? {
+        return withContext(Dispatchers.IO) {
+            // Obter a categoria checkin
+            val checkinCategory = getCategoryByNameAndOrder(name = "checkin", displayOrder = 1)
+
+            if (checkinCategory != null) {
+                // Obter as perguntas da categoria
+                val questions = surveyDao.getQuestionsByCategory(checkinCategory.categoryId).first()
+
+                if (questions.isNotEmpty()) {
+                    // Verificar se há respostas para essas perguntas hoje
+                    val today = dateFormatter.format(Date())
+                    val firstQuestion = questions.first()
+                    val answer = surveyDao.getAnswerForQuestion(firstQuestion.questionId, today)
+
+                    if (answer != null && answer.selectedOptionId != null) {
+                        // Obter a opção selecionada
+                        val options = surveyDao.getOptionsByQuestionId(firstQuestion.questionId).first()
+                        val selectedOption = options.find { it.optionId == answer.selectedOptionId }
+                        selectedOption?.text
+                    } else {
+                        null
+                    }
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        }
+    }
+
     /**
      * Sincroniza perguntas e opções do banco externo para o local
      */
