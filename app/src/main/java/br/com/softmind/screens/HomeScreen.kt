@@ -1,5 +1,6 @@
 package br.com.softmind.screens
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -23,10 +24,13 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import br.com.softmind.MainActivity
 import br.com.softmind.navigation.NavRoutes
+import br.com.softmind.ui.viewmodel.HomeViewModel
+import br.com.softmind.ui.viewmodel.HomeViewModelFactory
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,7 +38,19 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(
+    navController: NavHostController,
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            (LocalActivity.current as MainActivity).surveyDatabaseFacade
+        )
+    )
+) {
+    // Observar os estados do ViewModel
+    val hasCompletedTodayCheckin by viewModel.hasCompletedTodayCheckin.collectAsState()
+    val todaySelectedEmoji by viewModel.todaySelectedEmoji.collectAsState()
+    
+    // Configuração da animação Lottie original
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animationhome.json")
     )
@@ -104,6 +120,8 @@ fun HomeScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         delay(300)
         isLoaded = true
+        // Verificar se o usuário já fez o checkin hoje
+        viewModel.checkTodayCheckin()
     }
 
     Box(
@@ -208,7 +226,9 @@ fun HomeScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "Bem-vindo ao SoftMind",
+                        text = if (hasCompletedTodayCheckin) 
+                               "Seu check-in de hoje já foi registrado!" 
+                               else "Bem-vindo ao SoftMind",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -243,7 +263,9 @@ fun HomeScreen(navController: NavHostController) {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = fraseAleatoria,
+                                    text = if (hasCompletedTodayCheckin)
+                                           "Obrigado por compartilhar como você está se sentindo hoje."
+                                           else fraseAleatoria,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color.White.copy(alpha = 0.9f),
@@ -255,7 +277,75 @@ fun HomeScreen(navController: NavHostController) {
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
+                    
+                    // Se o usuário já completou o checkin, mostrar botão de ver dashboard
+                    if (hasCompletedTodayCheckin && todaySelectedEmoji != null) {
+                        val dashboardInteractionSource = remember { MutableInteractionSource() }
+                        val isDashboardPressed by dashboardInteractionSource.collectIsPressedAsState()
+                        val dashboardButtonScale by animateFloatAsState(
+                            targetValue = if (isDashboardPressed) 0.96f else 1f,
+                            animationSpec = tween(durationMillis = 100)
+                        )
+                        
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .fillMaxWidth(0.8f)
+                                .height(56.dp)
+                                .scale(dashboardButtonScale)
+                                .graphicsLayer {
+                                    shadowElevation = 16f
+                                    shape = RoundedCornerShape(28.dp)
+                                    clip = true
+                                }
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFF4CAF50),
+                                            Color(0xFF8BC34A)
+                                        ),
+                                        start = Offset(0f, 0f),
+                                        end = Offset(300f, 300f)
+                                    ), 
+                                    RoundedCornerShape(28.dp)
+                                )
+                                .clickable(
+                                    interactionSource = dashboardInteractionSource,
+                                    indication = null
+                                ) {
+                                    scope.launch {
+                                        delay(100)
+                                        // Usar explicitamente o valor de todaySelectedEmoji
+                                        val emoji = todaySelectedEmoji ?: ""
+                                        navController.navigate("${NavRoutes.DASHBOARD}/$emoji")
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Ver meu dashboard",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
+                    // Botão para fazer/refazer o checkin
                     val interactionSource = remember { MutableInteractionSource() }
                     val isPressed by interactionSource.collectIsPressedAsState()
                     val buttonScale by animateFloatAsState(
@@ -291,7 +381,7 @@ fun HomeScreen(navController: NavHostController) {
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Começar",
+                                text = if (hasCompletedTodayCheckin) "Refazer checkin" else "Começar",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
