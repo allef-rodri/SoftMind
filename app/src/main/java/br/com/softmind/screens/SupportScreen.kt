@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
@@ -33,6 +34,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SupportScreen(navController: NavHostController) {
     var isLoaded by remember { mutableStateOf(false) }
+    var showContacts by remember { mutableStateOf(false) }
 
     val titleAlpha by animateFloatAsState(
         targetValue = if (isLoaded) 1f else 0f,
@@ -94,10 +96,7 @@ fun SupportScreen(navController: NavHostController) {
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            accentPink.copy(alpha = 0.2f),
-                            Color.Transparent
-                        )
+                        colors = listOf(accentPink.copy(alpha = 0.2f), Color.Transparent)
                     ),
                     radius = decorSize,
                     center = Offset(size.width * 0.1f, size.height * 0.1f)
@@ -105,10 +104,7 @@ fun SupportScreen(navController: NavHostController) {
 
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            accentBlue.copy(alpha = 0.15f),
-                            Color.Transparent
-                        )
+                        colors = listOf(accentBlue.copy(alpha = 0.15f), Color.Transparent)
                     ),
                     radius = decorSize * 1.2f,
                     center = Offset(size.width * 0.9f, size.height * 0.85f)
@@ -133,7 +129,6 @@ fun SupportScreen(navController: NavHostController) {
                 }
             }
     ) {
-        // Conteúdo principal
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -143,15 +138,11 @@ fun SupportScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Título
             Text(
                 text = "SoftMind",
                 style = TextStyle(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.White,
-                            accentPink.copy(alpha = 0.9f)
-                        )
+                        colors = listOf(Color.White, accentPink.copy(alpha = 0.9f))
                     ),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 32.sp
@@ -177,8 +168,6 @@ fun SupportScreen(navController: NavHostController) {
                 }
             }
 
-
-            // Card principal
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -212,7 +201,6 @@ fun SupportScreen(navController: NavHostController) {
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Ícone decorativo
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
@@ -269,8 +257,8 @@ fun SupportScreen(navController: NavHostController) {
                         clip = true
                     }
                     .background(buttonGradient, RoundedCornerShape(30.dp))
-                    .clickable { /* Ação simulada */ },
-                    contentAlignment = Alignment.Center
+                    .clickable { showContacts = !showContacts },
+                contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -294,6 +282,103 @@ fun SupportScreen(navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            AnimatedVisibility(
+                visible = showContacts,
+                enter = fadeIn(animationSpec = tween(500)) + expandVertically(animationSpec = tween(500)),
+                exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300))
+            ) {
+                Card(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .graphicsLayer {
+                            shadowElevation = 8f
+                            shape = RoundedCornerShape(20.dp)
+                            clip = true
+                        },
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.White.copy(alpha = 0.12f),
+                                        Color.White.copy(alpha = 0.06f)
+                                    )
+                                )
+                            )
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Contato",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            style = TextStyle(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Color.White, Color(0xFFEC407A).copy(alpha = 0.9f))
+                                )
+                            ),
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+
+                        ContactRow(
+                            icon = Icons.Rounded.Chat,
+                            label = "@softmind_apoio",
+                            platform = "Instagram"
+                        )
+
+                        Divider(
+                            color = Color.White.copy(alpha = 0.2f),
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+
+                        ContactRow(
+                            icon = Icons.Rounded.Phone,
+                            label = "(11) 99999-8888",
+                            platform = "WhatsApp"
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+@Composable
+fun ContactRow(icon: ImageVector, label: String, platform: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = platform,
+            tint = Color.White,
+            modifier = Modifier
+                .size(28.dp)
+                .padding(end = 12.dp)
+        )
+
+        Column {
+            Text(
+                text = label,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = platform,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 14.sp
+            )
         }
     }
 }

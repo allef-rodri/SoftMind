@@ -21,9 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import br.com.softmind.navigation.NavRoutes
+import kotlinx.coroutines.delay
 
 @Composable
-fun AutoAvaliacaoScreen() {
+fun AutoAvaliacaoScreen(navController: NavHostController) {
     val questoes = listOf(
         questao(
             1,
@@ -58,7 +62,7 @@ fun AutoAvaliacaoScreen() {
     )
 
 
-    Questionario(questoes)
+    Questionario(questoes, navController)
 }
 
 data class questao(
@@ -69,7 +73,7 @@ data class questao(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Questionario(questions: List<questao>) {
+fun Questionario(questions: List<questao>, navController: NavHostController) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     val answers = remember { mutableStateListOf<String>() }
 
@@ -105,7 +109,8 @@ fun Questionario(questions: List<questao>) {
                     }
                 )
             } else {
-                ResultScreen(answers)
+                ResultScreen(answers = answers, navController = navController)
+
             }
         }
     }
@@ -186,8 +191,46 @@ fun QuestionScreen(
     }
 }
 
+//@Composable
+//fun ResultScreen(answers: List<String>, navController: NavHostController) {
+//    val backgroundGradient = Brush.verticalGradient(
+//        colors = listOf(
+//            Color(0xFF4A148C),
+//            Color(0xFF6A1B9A),
+//            Color(0xFF8E24AA),
+//            Color(0xFF9C27B0)
+//        )
+//    )
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(backgroundGradient)
+//            .padding(24.dp),
+//        verticalArrangement = Arrangement.Center,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Text(
+//            text = "Obrigado por responder!",
+//            style = MaterialTheme.typography.headlineMedium,
+//            color = Color.White,
+//            textAlign = TextAlign.Center
+//        )
+//
+//        Spacer(modifier = Modifier.height(24.dp))
+//
+//        answers.forEachIndexed { index, answer ->
+//            Text(
+//                text = "Pergunta ${index + 1}: $answer",
+//                style = MaterialTheme.typography.bodyLarge,
+//                color = Color.White
+//            )
+//        }
+//    }
+//}
+
 @Composable
-fun ResultScreen(answers: List<String>) {
+fun ResultScreen(answers: List<String>, navController: NavHostController) {
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF4A148C),
@@ -196,6 +239,14 @@ fun ResultScreen(answers: List<String>) {
             Color(0xFF9C27B0)
         )
     )
+
+    // Navega para a home após 3 segundos
+    LaunchedEffect(Unit) {
+        delay(4000)
+        navController.navigate(NavRoutes.HOME) {
+            popUpTo("autoavaliacao") { inclusive = true } // opcional: remove da pilha
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -222,10 +273,4 @@ fun ResultScreen(answers: List<String>) {
             )
         }
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun AutoAvaliacaoScreenPreview() {
-    AutoAvaliacaoScreen()
 }

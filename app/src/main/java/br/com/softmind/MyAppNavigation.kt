@@ -51,9 +51,9 @@ fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
             val emoji = backStackEntry.arguments?.getString("emoji") ?: ""
             DashboardScreen(navController = navController, selectedEmoji = emoji)
         }
-//        composable(NavRoutes.AVALIACAO) {
-//            AutoAvaliacaoScreen(navController)
-//        }
+        composable(NavRoutes.AVALIACAO) {
+            AutoAvaliacaoScreen(navController)
+        }
         composable(NavRoutes.SUPPORT) {
             SupportScreen(navController)
         }

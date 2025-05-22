@@ -7,6 +7,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -371,7 +372,11 @@ fun HomeScreen(
                             ) {
                                 scope.launch {
                                     delay(100)
-                                    navController.navigate(NavRoutes.CHECKIN)
+                                    if (hasCompletedTodayCheckin) {
+                                        navController.navigate(NavRoutes.AVALIACAO)
+                                    } else {
+                                        navController.navigate(NavRoutes.CHECKIN)
+                                    }
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -381,7 +386,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = if (hasCompletedTodayCheckin) "Refazer checkin" else "Começar",
+                                text = if (hasCompletedTodayCheckin) "Auto Avaliação" else "Começar",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
