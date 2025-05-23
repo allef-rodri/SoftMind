@@ -18,62 +18,59 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import br.com.softmind.navigation.NavRoutes
+import br.com.softmind.viewmodel.QuestionarioViewModel
+import br.com.softmind.model.Questao
 import kotlinx.coroutines.delay
+import br.com.softmind.model.QuestionarioResponse
 
 @Composable
-fun AutoAvaliacaoScreen(navController: NavHostController) {
-    val questoes = listOf(
-        questao(
-            1,
-            "Como você se sente hoje?",
-            listOf("Motivado", "Cansado", "Preocupado", "Estressado", "Animado", "Satisfeito")
-        ),
-        questao(
-            2,
-            "Como você avalia sua carga de trabalho?",
-            listOf("Muito Leve", "Leve", "Média", "Alta", "Muito Alta")
-        ),
-        questao(
-            3,
-            "Sua carga de trabalho afeta sua qualidade de vida?",
-            listOf("Não", "Raramente", "Às vezes", "Frequentemente", "Sempre")
-        ),
-        questao(
-            4,
-            "Você trabalha além do seu horário regular?",
-            listOf("Não", "Raramente", "Às vezes", "Frequentemente", "Sempre")
-        ),
-        questao(
-            5,
-            "Você tem apresentado sintomas como insônia, irritabilidade ou cansaço extremo?",
-            listOf("Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre")
-        ),
-        questao(
-            6,
-            "Você sente que sua saúde mental prejudica sua produtividade no trabalho?",
-            listOf("Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre")
-        )
-    )
+fun AutoAvaliacaoScreen(
+    navController: NavHostController,
+    viewModel: QuestionarioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    LaunchedEffect(Unit) {
+        viewModel.carregarQuestionario()
+    }
 
+    val isLoading by viewModel.isLoading.collectAsState()
+    val questionarioResponse by viewModel.questionario.collectAsState()
 
-    Questionario(questoes, navController)
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+    } else {
+        questionarioResponse?.let { response ->
+            val todasQuestoes = response.categorias.flatMap { it.questoes }
+            if (todasQuestoes.isNotEmpty()) {
+                Questionario(questions = todasQuestoes, navController = navController)
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Nenhuma questão disponível",
+                        color = Color.White,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+            }
+        }
+    }
 }
-
-data class questao(
-    val id: Int,
-    val text: String,
-    val options: List<String>
-)
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Questionario(questions: List<questao>, navController: NavHostController) {
+fun Questionario(questions: List<Questao>, navController: NavHostController) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     val answers = remember { mutableStateListOf<String>() }
 
@@ -110,7 +107,6 @@ fun Questionario(questions: List<questao>, navController: NavHostController) {
                 )
             } else {
                 ResultScreen(answers = answers, navController = navController)
-
             }
         }
     }
@@ -118,7 +114,7 @@ fun Questionario(questions: List<questao>, navController: NavHostController) {
 
 @Composable
 fun QuestionScreen(
-    questao: questao,
+    questao: Questao,
     onAnswer: (String) -> Unit
 ) {
     val cardGradient = Brush.linearGradient(
@@ -155,13 +151,13 @@ fun QuestionScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = questao.text,
+                text = questao.texto,
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
 
-            questao.options.forEach { option ->
+            questao.opcoes.forEach { option ->
                 Button(
                     onClick = { onAnswer(option) },
                     modifier = Modifier
@@ -191,44 +187,6 @@ fun QuestionScreen(
     }
 }
 
-//@Composable
-//fun ResultScreen(answers: List<String>, navController: NavHostController) {
-//    val backgroundGradient = Brush.verticalGradient(
-//        colors = listOf(
-//            Color(0xFF4A148C),
-//            Color(0xFF6A1B9A),
-//            Color(0xFF8E24AA),
-//            Color(0xFF9C27B0)
-//        )
-//    )
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(backgroundGradient)
-//            .padding(24.dp),
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Text(
-//            text = "Obrigado por responder!",
-//            style = MaterialTheme.typography.headlineMedium,
-//            color = Color.White,
-//            textAlign = TextAlign.Center
-//        )
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        answers.forEachIndexed { index, answer ->
-//            Text(
-//                text = "Pergunta ${index + 1}: $answer",
-//                style = MaterialTheme.typography.bodyLarge,
-//                color = Color.White
-//            )
-//        }
-//    }
-//}
-
 @Composable
 fun ResultScreen(answers: List<String>, navController: NavHostController) {
     val backgroundGradient = Brush.verticalGradient(
@@ -240,11 +198,11 @@ fun ResultScreen(answers: List<String>, navController: NavHostController) {
         )
     )
 
-    // Navega para a home após 3 segundos
+    // Navega para a home após 4 segundos
     LaunchedEffect(Unit) {
         delay(4000)
         navController.navigate(NavRoutes.HOME) {
-            popUpTo("autoavaliacao") { inclusive = true } // opcional: remove da pilha
+            popUpTo("autoavaliacao") { inclusive = true }
         }
     }
 
