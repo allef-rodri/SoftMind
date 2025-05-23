@@ -1,12 +1,6 @@
 package br.com.softmind.screens
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.with
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,12 +20,11 @@ import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.viewmodel.QuestionarioViewModel
 import br.com.softmind.model.Questao
 import kotlinx.coroutines.delay
-import br.com.softmind.model.QuestionarioResponse
 
 @Composable
 fun AutoAvaliacaoScreen(
     navController: NavHostController,
-    viewModel: QuestionarioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: QuestionarioViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
         viewModel.carregarQuestionario()
@@ -51,7 +44,11 @@ fun AutoAvaliacaoScreen(
         questionarioResponse?.let { response ->
             val todasQuestoes = response.categorias.flatMap { it.questoes }
             if (todasQuestoes.isNotEmpty()) {
-                Questionario(questions = todasQuestoes, navController = navController)
+                Questionario(
+                    questions = todasQuestoes,
+                    navController = navController,
+                    viewModel = viewModel
+                )
             } else {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -70,7 +67,11 @@ fun AutoAvaliacaoScreen(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Questionario(questions: List<Questao>, navController: NavHostController) {
+fun Questionario(
+    questions: List<Questao>,
+    navController: NavHostController,
+    viewModel: QuestionarioViewModel
+) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     val answers = remember { mutableStateListOf<String>() }
 
@@ -106,7 +107,12 @@ fun Questionario(questions: List<Questao>, navController: NavHostController) {
                     }
                 )
             } else {
-                ResultScreen(answers = answers, navController = navController)
+                ResultScreen(
+                    answers = answers,
+                    questions = questions,
+                    navController = navController,
+                    viewModel = viewModel
+                )
             }
         }
     }
@@ -188,7 +194,12 @@ fun QuestionScreen(
 }
 
 @Composable
-fun ResultScreen(answers: List<String>, navController: NavHostController) {
+fun ResultScreen(
+    answers: List<String>,
+    questions: List<Questao>,
+    navController: NavHostController,
+    viewModel: QuestionarioViewModel
+) {
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF4A148C),
@@ -198,8 +209,12 @@ fun ResultScreen(answers: List<String>, navController: NavHostController) {
         )
     )
 
-    // Navega para a home após 4 segundos
     LaunchedEffect(Unit) {
+        val respostasComPerguntas = questions.zip(answers) { pergunta, resposta ->
+            pergunta.texto to resposta
+        }
+        viewModel.enviarRespostas(respostasComPerguntas)
+
         delay(4000)
         navController.navigate(NavRoutes.HOME) {
             popUpTo("autoavaliacao") { inclusive = true }

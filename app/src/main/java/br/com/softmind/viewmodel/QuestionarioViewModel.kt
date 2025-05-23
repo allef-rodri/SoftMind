@@ -3,6 +3,8 @@ package br.com.softmind.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.softmind.model.QuestionarioResponse
+import br.com.softmind.model.Resposta
+import br.com.softmind.model.RespostaRequest
 import br.com.softmind.repository.QuestionarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,4 +31,18 @@ class QuestionarioViewModel : ViewModel() {
             }
         }
     }
+
+    fun enviarRespostas(respostas: List<Pair<String, String>>) {
+        viewModelScope.launch {
+            try {
+                val request = RespostaRequest(
+                    respostas = respostas.map { Resposta(it.first, it.second) }
+                )
+                repository.enviarRespostas(request)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
