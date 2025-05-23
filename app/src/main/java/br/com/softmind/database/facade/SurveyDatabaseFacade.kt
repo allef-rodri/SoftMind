@@ -52,6 +52,8 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
                 // Insere a pergunta
                 surveyDao.insertQuestion(question)
 
+//                "feliz", "cansado", "triste", "ansioso", "medo", "raiva"
+
                 // Cria 6 opções de resposta
                 val options = listOf(
                     Option(
@@ -64,7 +66,7 @@ class SurveyDatabaseFacade(private val surveyDao: SurveyDao) {
                     Option(
                         optionId = UUID.randomUUID(),
                         questionId = questionId,
-                        text = "Cansado",
+                        text = "cansado",
                         value = "tired",
                         displayOrder = 2
                     ),

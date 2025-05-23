@@ -106,17 +106,17 @@ fun CheckinScreen(
             )
 
             // Adicionar descrição se existir
-            currentQuestion?.description?.let { description ->
-                Text(
-                    text = description,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+//            currentQuestion?.description?.let { description ->
+//                Text(
+//                    text = description,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    textAlign = TextAlign.Center,
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.Normal,
+//                    color = Color.White.copy(alpha = 0.8f)
+//                )
+//                Spacer(modifier = Modifier.height(16.dp))
+//            }
 
             // Exibir os emojis organizados em grid de 3x2
             if (emojiOptions.isNotEmpty()) {
