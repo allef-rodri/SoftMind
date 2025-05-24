@@ -373,7 +373,7 @@ fun HomeScreen(
                                 scope.launch {
                                     delay(100)
                                     if (hasCompletedTodayCheckin) {
-                                        navController.navigate(NavRoutes.CHECKIN)
+                                        navController.navigate(NavRoutes.AVALIACAO)
                                     } else {
                                         navController.navigate(NavRoutes.CHECKIN)
                                     }
