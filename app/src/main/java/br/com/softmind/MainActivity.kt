@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import br.com.softmind.data.remote.RetrofitClient
 import br.com.softmind.database.AppDatabase
 import br.com.softmind.database.facade.SurveyDatabaseFacade
 import br.com.softmind.ui.theme.SoftMindTheme
@@ -25,6 +26,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        RetrofitClient.init(this)
 
         lifecycleScope.launch {
             if (!surveyDatabaseFacade.isDatabasePopulated()) {
