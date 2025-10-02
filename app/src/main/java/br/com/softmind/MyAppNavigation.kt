@@ -14,6 +14,7 @@ import br.com.softmind.ui.viewmodel.CheckinViewModel
 import br.com.softmind.ui.viewmodel.CheckinViewModelFactory
 import br.com.softmind.ui.viewmodel.HomeViewModel
 import br.com.softmind.ui.viewmodel.HomeViewModelFactory
+import br.com.softmind.viewmodel.QuestionarioViewModel
 
 @Composable
 fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
@@ -52,7 +53,8 @@ fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
             DashboardScreen(navController = navController, selectedEmoji = emoji)
         }
         composable(NavRoutes.AVALIACAO) {
-            AutoAvaliacaoScreen(navController)
+            val viewModel: QuestionarioViewModel = viewModel()
+            AutoAvaliacaoScreen(navController, viewModel)
         }
         composable(NavRoutes.SUPPORT) {
             SupportScreen(navController)

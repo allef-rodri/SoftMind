@@ -32,6 +32,7 @@ import br.com.softmind.MainActivity
 import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.ui.viewmodel.HomeViewModel
 import br.com.softmind.ui.viewmodel.HomeViewModelFactory
+
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ fun HomeScreen(
     // Observar os estados do ViewModel
     val hasCompletedTodayCheckin by viewModel.hasCompletedTodayCheckin.collectAsState()
     val todaySelectedEmoji by viewModel.todaySelectedEmoji.collectAsState()
-    
+
     // Configuração da animação Lottie original
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animationhome.json")
@@ -227,9 +228,9 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = if (hasCompletedTodayCheckin) 
-                               "Seu check-in de hoje já foi registrado!" 
-                               else "Bem-vindo ao SoftMind",
+                        text = if (hasCompletedTodayCheckin)
+                            "Seu check-in de hoje já foi registrado!"
+                        else "Bem-vindo ao SoftMind",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -265,8 +266,8 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (hasCompletedTodayCheckin)
-                                           "Obrigado por compartilhar como você está se sentindo hoje."
-                                           else fraseAleatoria,
+                                        "Obrigado por compartilhar como você está se sentindo hoje."
+                                    else fraseAleatoria,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color.White.copy(alpha = 0.9f),
@@ -278,7 +279,7 @@ fun HomeScreen(
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
-                    
+
                     // Se o usuário já completou o checkin, mostrar botão de ver dashboard
                     if (hasCompletedTodayCheckin && todaySelectedEmoji != null) {
                         val dashboardInteractionSource = remember { MutableInteractionSource() }
@@ -287,7 +288,7 @@ fun HomeScreen(
                             targetValue = if (isDashboardPressed) 0.96f else 1f,
                             animationSpec = tween(durationMillis = 100)
                         )
-                        
+
                         Box(
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
@@ -307,7 +308,7 @@ fun HomeScreen(
                                         ),
                                         start = Offset(0f, 0f),
                                         end = Offset(300f, 300f)
-                                    ), 
+                                    ),
                                     RoundedCornerShape(28.dp)
                                 )
                                 .clickable(
@@ -342,7 +343,7 @@ fun HomeScreen(
                                 )
                             }
                         }
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 

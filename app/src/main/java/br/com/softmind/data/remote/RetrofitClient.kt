@@ -6,8 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL =
-        "https://621a8c81-a292-4502-88f0-657ac214560d.mock.pstmn.io/"
+    private const val BASE_URL = "http://10.0.2.2:5094/"
 
     private lateinit var retrofit: Retrofit
 

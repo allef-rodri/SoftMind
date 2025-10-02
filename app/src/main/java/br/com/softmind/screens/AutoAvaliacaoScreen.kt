@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.viewmodel.QuestionarioViewModel
-import br.com.softmind.model.Questao
+import br.com.softmind.model.QuestaoResponse
 import kotlinx.coroutines.delay
 
 @Composable
@@ -31,7 +31,7 @@ fun AutoAvaliacaoScreen(
     }
 
     val isLoading by viewModel.isLoading.collectAsState()
-    val questionarioResponse by viewModel.questionario.collectAsState()
+    val categorias by viewModel.categorias.collectAsState()
 
     if (isLoading) {
         Box(
@@ -41,8 +41,8 @@ fun AutoAvaliacaoScreen(
             CircularProgressIndicator(color = Color.White)
         }
     } else {
-        questionarioResponse?.let { response ->
-            val todasQuestoes = response.categorias.flatMap { it.questoes }
+        categorias?.let { listaCategorias ->
+            val todasQuestoes = listaCategorias.flatMap { it.questoes }
             if (todasQuestoes.isNotEmpty()) {
                 Questionario(
                     questions = todasQuestoes,
@@ -68,7 +68,7 @@ fun AutoAvaliacaoScreen(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Questionario(
-    questions: List<Questao>,
+    questions: List<QuestaoResponse>,
     navController: NavHostController,
     viewModel: QuestionarioViewModel
 ) {
@@ -120,7 +120,7 @@ fun Questionario(
 
 @Composable
 fun QuestionScreen(
-    questao: Questao,
+    questao: QuestaoResponse,
     onAnswer: (String) -> Unit
 ) {
     val cardGradient = Brush.linearGradient(
@@ -196,7 +196,7 @@ fun QuestionScreen(
 @Composable
 fun ResultScreen(
     answers: List<String>,
-    questions: List<Questao>,
+    questions: List<QuestaoResponse>,
     navController: NavHostController,
     viewModel: QuestionarioViewModel
 ) {
