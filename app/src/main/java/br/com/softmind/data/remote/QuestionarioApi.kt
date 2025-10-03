@@ -3,6 +3,7 @@ package br.com.softmind.data.remote
 import br.com.softmind.model.CategoriaResponse
 import br.com.softmind.model.MoodDto
 import br.com.softmind.model.Resposta
+import br.com.softmind.model.WellnessResponse
 import retrofit2.http.GET
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -20,4 +21,8 @@ interface QuestionarioApi {
 
     @GET("api/Mood/GetMoodLastSevenDays")
     suspend fun loadDashboardData(): List<MoodDto>
+
+    @GET("api/WellnessMessages/GetRandom")
+    suspend fun loadWellnessData(): List<WellnessResponse>
+
 }
