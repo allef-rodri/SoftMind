@@ -39,7 +39,7 @@ class CheckinViewModel(
             val option = _selectedOption.value
 
             if (question != null && option != null) {
-//                surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
+                surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
                 repository.salvarHumor(emojiName = option.value.toString())
                 onComplete()
             }

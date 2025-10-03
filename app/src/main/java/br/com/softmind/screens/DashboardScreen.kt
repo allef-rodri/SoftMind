@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.navigation.NavHostController
 import br.com.softmind.ui.viewmodel.DashboardViewModel
+import android.util.Log
 
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
@@ -147,15 +148,34 @@ fun DashboardScreen(
         }
         val weekDays = remember { listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom") }
 
-        val positiveDays = remember { moodData.count { it >= 6 } }
-        val negativeDays = remember { moodData.count { it < 6 } }
-        val averageMood = remember { moodData.average().roundToInt() }
-        val mostFrequentMood = remember {
-            when (moodData.groupBy { it }.maxByOrNull { it.value.size }?.key) {
+        val positiveDays = remember(moodData) {
+            val count = moodData.count { it >= 6 }
+            Log.d("MoodDebug", "positiveDays - moodData: $moodData, count: $count")
+            count
+        }
+
+        val negativeDays = remember(moodData) {
+            val count = moodData.count { it < 6 }
+            Log.d("MoodDebug", "negativeDays - moodData: $moodData, count: $count")
+            count
+        }
+
+        val averageMood = remember(moodData) {
+            val avg = if (moodData.isEmpty()) 0 else moodData.average().roundToInt()
+            Log.d("MoodDebug", "averageMood - moodData: $moodData, average: $avg")
+            avg
+        }
+
+        val mostFrequentMood = remember(moodData) {
+            val grouped = moodData.groupBy { it }
+            val mostFrequent = grouped.maxByOrNull { it.value.size }?.key
+            val mood = when (mostFrequent) {
                 in 1..3 -> "Triste"
                 in 4..6 -> "Neutro"
                 else -> "Feliz"
             }
+            Log.d("MoodDebug", "mostFrequentMood - moodData: $moodData, mostFrequent: $mostFrequent, grouped: $grouped, result: $mood")
+            mood
         }
 
         LaunchedEffect(Unit) {
