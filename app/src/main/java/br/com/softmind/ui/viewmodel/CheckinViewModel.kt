@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import br.com.softmind.database.entity.Option
 import br.com.softmind.database.entity.Question
 import br.com.softmind.database.facade.SurveyDatabaseFacade
+import br.com.softmind.model.EmojiName
+import br.com.softmind.repository.CheckinRepository
+import br.com.softmind.repository.QuestionarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
@@ -23,6 +26,8 @@ class CheckinViewModel(
     private val _selectedOption = MutableStateFlow<Option?>(null)
     val selectedOption: StateFlow<Option?> = _selectedOption
 
+    private val repository = CheckinRepository()
+
     init {
         loadCheckinData()
     }
@@ -37,7 +42,9 @@ class CheckinViewModel(
             val option = _selectedOption.value
 
             if (question != null && option != null) {
-                surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
+//                surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
+                val emojiName = EmojiName(emojiName = option.toString())
+                repository.salvarHumor(emojiName = emojiName)
                 onComplete()
             }
         }
