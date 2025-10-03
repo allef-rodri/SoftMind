@@ -21,7 +21,12 @@ class QuestionarioRepository {
 
     suspend fun enviarRespostas(respostas: List<Resposta>) {
         Log.d("QuestionarioRepo", "Enviando respostas: $respostas")
-        RetrofitClient.api.enviarRespostas(respostas)
+        try {
+            RetrofitClient.api.enviarRespostas(respostas)
+        } catch (e: Exception) {
+            Log.e("QuestionarioRepo", "Erro ao enviar respostas: ${e.message}", e)
+            throw e
+        }
     }
 }
 

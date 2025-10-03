@@ -8,9 +8,13 @@ class WellnessRepository {
 
     suspend fun loadWellnessData(): List<String> {
         Log.d("WellnessRepo", "Carregando dados da saúde")
-        val response: List<WellnessResponse> = RetrofitClient.api.loadWellnessData()
-        
-        return response.map { it.name }
+        return try {
+            val response: List<WellnessResponse> = RetrofitClient.api.loadWellnessData()
+            response.map { it.name }
+        } catch (e: Exception) {
+            Log.e("WellnessRepo", "Erro ao carregar dados da saúde: ${e.message}", e)
+            throw e
+        }
 
     }
 

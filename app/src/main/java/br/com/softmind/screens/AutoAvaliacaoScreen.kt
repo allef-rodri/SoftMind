@@ -19,6 +19,12 @@ import androidx.navigation.NavHostController
 import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.viewmodel.QuestionarioViewModel
 import br.com.softmind.model.QuestaoResponse
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Warning
 import kotlinx.coroutines.delay
 
 @Composable
@@ -32,33 +38,46 @@ fun AutoAvaliacaoScreen(
 
     val isLoading by viewModel.isLoading.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
-
-    if (isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = Color.White)
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    when {
+        // Exibe mensagem de erro com botão de retry
+        errorMessage != null -> {
+            QuestionarioErrorContent(
+                message = errorMessage!!,
+                onRetry = { viewModel.retryCarregarQuestionario() },
+                onBack = { navController.popBackStack() }
+            )
         }
-    } else {
-        categorias?.let { listaCategorias ->
-            val todasQuestoes = listaCategorias.flatMap { it.questoes }
-            if (todasQuestoes.isNotEmpty()) {
-                Questionario(
-                    questions = todasQuestoes,
-                    navController = navController,
-                    viewModel = viewModel
-                )
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Nenhuma questão disponível",
-                        color = Color.White,
-                        style = MaterialTheme.typography.headlineSmall
+        // Estado de carregamento
+        isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        }
+        // Conteúdo principal ou mensagem de lista vazia
+        else -> {
+            categorias?.let { listaCategorias ->
+                val todasQuestoes = listaCategorias.flatMap { it.questoes }
+                if (todasQuestoes.isNotEmpty()) {
+                    Questionario(
+                        questions = todasQuestoes,
+                        navController = navController,
+                        viewModel = viewModel
                     )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Nenhuma questão disponível",
+                            color = Color.White,
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
                 }
             }
         }
@@ -244,6 +263,95 @@ fun ResultScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White
             )
+        }
+    }
+}
+
+@Composable
+private fun QuestionarioErrorContent(
+    message: String,
+    onRetry: () -> Unit,
+    onBack: () -> Unit
+) {
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF4A148C),
+            Color(0xFF6A1B9A),
+            Color(0xFF8E24AA),
+            Color(0xFF9C27B0)
+        )
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundGradient)
+    ) {
+        // Cabeçalho com botão de voltar semelhante ao da tela de alertas
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 32.dp, start = 24.dp, end = 24.dp)
+        ) {
+            val accentBlue = Color(0xFF42A5F5)
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = accentBlue
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        // Conteúdo central com a mensagem de erro
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .wrapContentHeight()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.15f)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = message,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFA000)
+                        )
+                    ) {
+                        Text(
+                            text = "Tentar novamente",
+                            color = Color.White
+                        )
+                    }
+                }
+            }
         }
     }
 }

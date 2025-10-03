@@ -25,6 +25,13 @@ class CheckinViewModel(
 
     private val repository = CheckinRepository()
 
+    // Expõe mensagens de erro ocorridas durante o processo de salvar o humor.
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    /**
+     * Fluxo que a interface pode observar para exibir mensagens de erro.
+     */
+    val errorMessage: StateFlow<String?> = _errorMessage
+
     init {
         loadCheckinData()
     }
@@ -39,11 +46,32 @@ class CheckinViewModel(
             val option = _selectedOption.value
 
             if (question != null && option != null) {
-                surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
-                repository.salvarHumor(emojiName = option.value.toString())
-                onComplete()
+                try {
+                    surveyDatabaseFacade.saveAnswer(question.questionId, option.optionId)
+                    repository.salvarHumor(emojiName = option.value.toString())
+                    onComplete()
+                } catch (e: Exception) {
+                    // Define a mensagem de erro para que a UI possa reagir
+                    // Mapeia a mensagem de erro para algo mais amigável ao usuário
+                    val friendlyMessage = when {
+                        e.message?.contains("Unable to resolve host") == true ->
+                            "Você está offline ou há problemas com a rede. Verifique sua conexão e tente novamente."
+                        e.message?.contains("timeout") == true ->
+                            "A solicitação demorou demais. Tente novamente."
+                        else ->
+                            "Não foi possível salvar sua resposta. Por favor, tente novamente."
+                    }
+                    _errorMessage.value = friendlyMessage
+                }
             }
         }
+    }
+
+    /**
+     * Permite que a interface limpe a mensagem de erro após exibi-la ao usuário.
+     */
+    fun clearError() {
+        _errorMessage.value = null
     }
 
     private fun loadCheckinData() {

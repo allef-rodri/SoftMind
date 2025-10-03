@@ -7,7 +7,12 @@ class CheckinRepository {
 
     suspend fun salvarHumor(emojiName: String) {
         Log.d("CheckinRepo", "Enviando respostas: $emojiName")
-        RetrofitClient.api.salvarEmojiName(emojiName)
+        try {
+            RetrofitClient.api.salvarEmojiName(emojiName)
+        } catch (e: Exception) {
+            Log.e("CheckinRepo", "Erro ao salvar humor: ${e.message}", e)
+            throw e
+        }
     }
 
 }

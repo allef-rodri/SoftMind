@@ -19,12 +19,25 @@ class QuestionarioViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    // Fluxo para expor mensagens de erro para a UI
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
     fun carregarQuestionario() {
         viewModelScope.launch {
             try {
                 _categorias.value = repository.carregarQuestoes()
             } catch (e: Exception) {
-                e.printStackTrace()
+                // Mapeia a mensagem de erro para algo mais amigável
+                val friendlyMessage = when {
+                    e.message?.contains("Unable to resolve host") == true ->
+                        "Você está offline ou há problemas com a rede. Verifique sua conexão e tente novamente."
+                    e.message?.contains("timeout") == true ->
+                        "A solicitação demorou demais. Tente novamente."
+                    else ->
+                        "Não foi possível carregar o questionário. Por favor, tente novamente mais tarde."
+                }
+                _errorMessage.value = friendlyMessage
             } finally {
                 _isLoading.value = false
             }
@@ -39,9 +52,34 @@ class QuestionarioViewModel : ViewModel() {
                 }
                 repository.enviarRespostas(listaRespostas)
             } catch (e: Exception) {
-                e.printStackTrace()
+                // Atualiza mensagem de erro para que a UI possa reagir de forma amigável
+                val friendlyMessage = when {
+                    e.message?.contains("Unable to resolve host") == true ->
+                        "Você está offline ou há problemas com a rede. Verifique sua conexão e tente novamente."
+                    e.message?.contains("timeout") == true ->
+                        "A solicitação demorou demais. Tente novamente."
+                    else ->
+                        "Não foi possível enviar as respostas. Por favor, tente novamente mais tarde."
+                }
+                _errorMessage.value = friendlyMessage
             }
         }
+    }
+
+    /**
+     * Permite que a interface tente novamente carregar o questionário após um erro.
+     */
+    fun retryCarregarQuestionario() {
+        _isLoading.value = true
+        _errorMessage.value = null
+        carregarQuestionario()
+    }
+
+    /**
+     * Limpa a mensagem de erro após ser exibida.
+     */
+    fun clearError() {
+        _errorMessage.value = null
     }
 
 }

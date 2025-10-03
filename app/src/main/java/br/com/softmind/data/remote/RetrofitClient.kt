@@ -4,6 +4,7 @@ import android.content.Context
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import br.com.softmind.data.remote.AlertApi
 
 object RetrofitClient {
     private const val BASE_URL = "http://10.0.2.2:5094/"
@@ -24,5 +25,9 @@ object RetrofitClient {
 
     val api: QuestionarioApi by lazy {
         retrofit.create(QuestionarioApi::class.java)
+    }
+
+    val alertApi: AlertApi by lazy {
+        retrofit.create(AlertApi::class.java)
     }
 }

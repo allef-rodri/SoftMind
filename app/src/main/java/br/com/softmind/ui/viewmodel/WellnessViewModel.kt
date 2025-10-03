@@ -42,18 +42,19 @@ class WellnessViewModel(
                 val orientations = repository.loadWellnessData()
 
                 if (orientations.isEmpty()) {
-                    _uiState.value = WellnessUiState.Error("Nenhuma orientação disponível no momento.")
+                    // Não há orientações novas para exibir
+                    _uiState.value = WellnessUiState.Error("Não há orientações disponíveis no momento.")
                 } else {
                     _uiState.value = WellnessUiState.Success(orientations)
                 }
             } catch (e: Exception) {
                 val errorMessage = when {
                     e.message?.contains("Unable to resolve host") == true ->
-                        "Sem conexão com a internet. Verifique sua conexão."
+                        "Você está offline ou há problemas com a rede. Por favor, verifique a conexão e tente novamente."
                     e.message?.contains("timeout") == true ->
-                        "Tempo esgotado. Tente novamente."
+                        "A solicitação demorou demais. Tente novamente."
                     else ->
-                        "Erro ao carregar orientações: ${e.message ?: "Erro desconhecido"}"
+                        "Não foi possível carregar as orientações. Por favor, tente novamente mais tarde."
                 }
                 _uiState.value = WellnessUiState.Error(errorMessage)
             }
