@@ -4,6 +4,7 @@ import br.com.softmind.data.remote.RetrofitClient
 import br.com.softmind.model.CategoriaResponse
 import br.com.softmind.model.RespostaRequest
 import android.util.Log
+import br.com.softmind.model.Resposta
 
 class QuestionarioRepository {
 
@@ -19,7 +20,7 @@ class QuestionarioRepository {
         }
     }
 
-    suspend fun enviarRespostas(respostas: RespostaRequest) {
+    suspend fun enviarRespostas(respostas: List<Resposta>) {
         Log.d("QuestionarioRepo", "Enviando respostas: $respostas")
         RetrofitClient.api.enviarRespostas(respostas)
     }

@@ -35,10 +35,10 @@ class QuestionarioViewModel : ViewModel() {
     fun enviarRespostas(respostas: List<Pair<String, String>>) {
         viewModelScope.launch {
             try {
-                val request = RespostaRequest(
-                    respostas = respostas.map { Resposta(it.first, it.second) }
-                )
-                repository.enviarRespostas(request)
+                val listaRespostas: List<Resposta> = respostas.map {
+                    Resposta(pergunta = it.first, resposta = it.second)
+                }
+                repository.enviarRespostas(listaRespostas)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
