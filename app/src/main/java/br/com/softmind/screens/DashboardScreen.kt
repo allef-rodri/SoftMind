@@ -31,12 +31,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.navigation.NavHostController
+import br.com.softmind.ui.viewmodel.DashboardViewModel
 
 
 @OptIn(ExperimentalTextApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
-    navController: NavHostController, selectedEmoji: String) {
+    navController: NavHostController,
+    selectedEmoji: String,
+    viewModel: DashboardViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val validEmojis = listOf("feliz", "cansado", "triste", "ansioso", "medo", "raiva")
     val isValidEmoji = selectedEmoji in validEmojis
 
@@ -134,7 +137,14 @@ fun DashboardScreen(
             )
         )
 
-        val moodData = remember { listOf(6, 4, 7, 3, 8, 9, 5) }
+        val moods: List<String> by viewModel.dashboardData.collectAsState()
+
+        val moodData: List<Int> = remember(moods) {
+            moods
+                .map { moodNameToScore(it) }   // "feliz" -> 9, "triste" -> 2, etc.
+                .takeLast(7)                   // pega só os últimos 7
+                .padLeftTo(7, default = 5)     // completa à esquerda com neutro (5) se tiver menos de 7
+        }
         val weekDays = remember { listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom") }
 
         val positiveDays = remember { moodData.count { it >= 6 } }
@@ -561,6 +571,22 @@ fun DashboardScreen(
         }
     }
 }
+
+fun moodNameToScore(name: String): Int = when (name.trim().lowercase()) {
+    // TODO: O problema é aqui!
+    "happyface" -> 10
+    "tired" -> 8
+    "sadface" -> 2
+    "scare" -> 4
+    "scared" -> 4
+    "angry" -> 1
+
+    else -> 0
+}
+
+fun <T> List<T>.padLeftTo(size: Int, default: T): List<T> =
+    if (this.size >= size) this.takeLast(size)
+    else List(size - this.size) { default } + this
 
 @Composable
 fun StatCard(

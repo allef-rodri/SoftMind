@@ -12,6 +12,7 @@ import br.com.softmind.navigation.NavRoutes
 import br.com.softmind.screens.*
 import br.com.softmind.ui.viewmodel.CheckinViewModel
 import br.com.softmind.ui.viewmodel.CheckinViewModelFactory
+import br.com.softmind.ui.viewmodel.DashboardViewModel
 import br.com.softmind.ui.viewmodel.HomeViewModel
 import br.com.softmind.ui.viewmodel.HomeViewModelFactory
 import br.com.softmind.viewmodel.QuestionarioViewModel
@@ -50,6 +51,7 @@ fun MyAppNavigation(navController: NavHostController, modifier: Modifier) {
             arguments = listOf(navArgument("emoji") { defaultValue = "" })
         ) { backStackEntry ->
             val emoji = backStackEntry.arguments?.getString("emoji") ?: ""
+            val viewModel: DashboardViewModel = viewModel()
             DashboardScreen(navController = navController, selectedEmoji = emoji)
         }
         composable(NavRoutes.AVALIACAO) {

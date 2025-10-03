@@ -1,6 +1,7 @@
 package br.com.softmind.data.remote
 
 import br.com.softmind.model.CategoriaResponse
+import br.com.softmind.model.MoodDto
 import br.com.softmind.model.Resposta
 import retrofit2.http.GET
 import retrofit2.http.Body
@@ -17,4 +18,6 @@ interface QuestionarioApi {
     @POST("api/Mood/AddMood")
     suspend fun salvarEmojiName(@Body request: String)
 
+    @GET("api/Mood/GetMoodLastSevenDays")
+    suspend fun loadDashboardData(): List<MoodDto>
 }
