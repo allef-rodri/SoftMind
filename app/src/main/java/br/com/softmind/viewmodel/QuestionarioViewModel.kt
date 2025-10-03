@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.softmind.model.CategoriaResponse
 import br.com.softmind.model.Resposta
-import br.com.softmind.model.RespostaRequest
 import br.com.softmind.repository.QuestionarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

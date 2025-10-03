@@ -2,7 +2,6 @@ package br.com.softmind.repository
 
 import br.com.softmind.data.remote.RetrofitClient
 import br.com.softmind.model.CategoriaResponse
-import br.com.softmind.model.RespostaRequest
 import android.util.Log
 import br.com.softmind.model.Resposta
 

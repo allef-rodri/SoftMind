@@ -1,9 +1,7 @@
 package br.com.softmind.data.remote
 
 import br.com.softmind.model.CategoriaResponse
-import br.com.softmind.model.EmojiName
 import br.com.softmind.model.Resposta
-import br.com.softmind.model.RespostaRequest
 import retrofit2.http.GET
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -17,6 +15,6 @@ interface QuestionarioApi {
     suspend fun enviarRespostas(@Body request: List<Resposta>)
 
     @POST("api/Mood/AddMood")
-    suspend fun salvarEmojiName(@Body request: EmojiName)
+    suspend fun salvarEmojiName(@Body request: String)
 
 }
