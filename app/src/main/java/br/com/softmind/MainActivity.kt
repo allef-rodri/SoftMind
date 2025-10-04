@@ -1,29 +1,24 @@
 package br.com.softmind
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import br.com.softmind.data.remote.RetrofitClient
 import br.com.softmind.database.AppDatabase
 import br.com.softmind.database.facade.SurveyDatabaseFacade
-import br.com.softmind.repository.AuthRepository
+import br.com.softmind.database.util.AuthManager
 import br.com.softmind.ui.theme.SoftMindTheme
+import br.com.softmind.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
-import br.com.softmind.BuildConfig
 
 class MainActivity : ComponentActivity() {
     private val appDatabase: AppDatabase by lazy { AppDatabase.getDatabase(applicationContext) }
@@ -32,48 +27,47 @@ class MainActivity : ComponentActivity() {
 
     val surveyDatabaseFacade by lazy { SurveyDatabaseFacade(surveyDao) }
 
+    // Cria o ViewModel da atividade
+    private val authViewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         RetrofitClient.init(this)
 
-        var authReady by mutableStateOf(false)
-
+        // Preencher o DB se necessário
         lifecycleScope.launch {
-            try {
-                val repo = AuthRepository(
-                    RetrofitClient.authApi,
-                    RetrofitClient.tokenStore()
-                )
-                repo.loginWithFixedToken(BuildConfig.FIXED_TOKEN)
-            } catch (e: Exception) {
-                // Em caso de falha, você pode logar ou tratar (exibir erro/retentar)
-                // Para não travar o app, seguimos liberando a UI:
-            } finally {
-                authReady = true
+            if (!surveyDatabaseFacade.isDatabasePopulated()) {
+                surveyDatabaseFacade.populateDatabase(lifecycleScope)
+            }
+        }
+
+        // 🔹 Chamada de login automática
+        lifecycleScope.launch {
+            val success = authViewModel.login()
+            if (success) {
+                Log.d("AUTH", "Login realizado com sucesso")
+                Log.d("AUTH", "Token obtido: ${AuthManager.token}")
+                Log.d("AUTH", "Expiração: ${AuthManager.expiresAt}")
+            } else {
+                Log.e("AUTH", "Falha ao realizar login")
             }
         }
 
         setContent {
             SoftMindTheme {
-                if (!authReady) {
-                    SplashLoading()
-                } else {
-                    val navController = rememberNavController()
+                val navController = rememberNavController()
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
                     MyAppNavigation(
                         navController = navController,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SplashLoading() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
     }
 }
