@@ -4,7 +4,6 @@ import android.content.Context
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import br.com.softmind.data.remote.AlertApi
 
 object RetrofitClient {
     private const val BASE_URL = "http://10.0.2.2:5094/"
@@ -14,6 +13,7 @@ object RetrofitClient {
     fun init(context: Context) {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(DeviceIdInterceptor(context))
+            .addInterceptor(AuthInterceptor())
             .build()
 
         retrofit = Retrofit.Builder()
@@ -30,4 +30,9 @@ object RetrofitClient {
     val alertApi: AlertApi by lazy {
         retrofit.create(AlertApi::class.java)
     }
+
+    val authApi: AuthApi by lazy {
+        retrofit.create(AuthApi::class.java)
+    }
+
 }
